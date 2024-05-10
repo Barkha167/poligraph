@@ -1,0 +1,213 @@
+token_map:
+  VERB_SHARE_WITH:
+  - share
+  - trade
+  - exchange
+  - disclose
+
+  VERB_PROVIDE_WITH:
+  - supply
+  - provide
+
+  VERB_PROVIDE_TO:
+  - provide
+  - supply
+  - release
+  - disclose
+  - transfer
+  - transmit
+  - give
+  - divulge
+  - pass
+  - submit
+
+  VERB_SELL_TO:
+  - sell
+  - rent
+  - lease
+
+  VERB_COLLECT_FROM:
+  - collect
+  - gather
+  - obtain
+  - receive
+  - solicit
+  - acquire
+  - request
+  - get
+
+  VERB_USE:
+  - use
+  - access
+  - process
+  - utilize
+  - analyze
+  - need
+
+  VERB_STORE:
+  - store
+  - save
+  - preserve
+  - record
+  - retain
+  - maintain
+  - log
+  - keep
+  - hold
+
+  VERB_REQUIRE_TODO:
+  - ask
+  - require
+  - need
+  - prompt
+  - deem
+  - oblige
+
+  VERB_ALLOW_TODO:
+  - enable
+  - allow
+  - permit
+  - authorize
+
+  VERB_HAVE_TODO:
+  - have
+  - aim
+  - intend
+  - need
+  - seek
+  - continue
+
+patterns:
+  # E1 share DT with E2
+  - root: '*VERB_SHARE_WITH:root|ccomp'
+    match: [':subj@E1', '!:obj@DT', 'with,:obj@E2']
+    transform: ['SHARE', 'E1', 'DT', 'E2']
+
+  # E1 collect DT from E2
+  - root: '*VERB_COLLECT_FROM:root|ccomp'
+    match: [':subj@E1', '!:obj@DT', 'from,:obj@E2']
+    transform: ['COLLECT', 'E1', 'DT', 'E2']
+
+  # E1 provide E2 with DT
+  - root: '*VERB_PROVIDE_WITH:root|ccomp'
+    match: [':subj@E1', ':obj@E2', '!with,:obj@DT']
+    transform: ['SHARE', 'E1', 'DT', 'E2']
+
+  # E1 provide DT to E2
+  - root: '*VERB_PROVIDE_TO:root|ccomp'
+    match: [':subj@E1', '!:obj@DT', 'to,:obj@E2', ':dative@E3']
+    transform: ['SHARE', 'E1', 'DT', 'E2|E3']
+
+  # E1 sell DT to E2
+  - root: '*VERB_SELL_TO:root|ccomp'
+    match: [':subj@E1', '!:obj@DT', 'to,:obj@E2', ':dative@E3']
+    transform: ['SELL', 'E1', 'DT', 'E2|E3']
+
+  # E1 use DT
+  - root: '*VERB_USE:root|ccomp'
+    match: [':subj@E1', '!:obj@DT']
+    transform: ['USE', 'E1', 'DT']
+
+  # E1 store DT
+  - root: '*VERB_STORE:root|ccomp'
+    match: [':subj@E1', '!:obj@DT']
+    transform: ['STORE', 'E1', 'DT']
+
+  # E1 have/get/gain access to DT
+  - root: 'have|get|gain:root|ccomp'
+    match: [':subj@E1', '!access:obj,to,:obj@DT']
+    transform: ['USE', 'E1', 'DT']
+
+  # E1 make use of DT
+  - root: 'make:root|ccomp'
+    match: [':subj@E1', '!use:obj', '!of,:obj@DT']
+    transform: ['USE', 'E1', 'DT']
+
+  # E1 require/ask E2 to share DT with E3
+  - root: '*VERB_REQUIRE_TODO:root|ccomp'
+    match: [':subj@E1',
+            '*VERB_SHARE_WITH:xcomp|ccomp,:subj@E2',
+            '!*VERB_SHARE_WITH:xcomp|ccomp,:obj@DT',
+            '*VERB_SHARE_WITH:xcomp|ccomp,with,:obj@E3']
+    transform: ['SHARE', 'E2', 'DT', 'E3|E1']
+
+  # E1 require/ask E2 to provide E3 with DT
+  - root: '*VERB_REQUIRE_TODO:root|ccomp'
+    match: [':subj@E1',
+            '*VERB_PROVIDE_WITH:xcomp|ccomp,:subj@E2',
+            '*VERB_PROVIDE_WITH:xcomp|ccomp,:obj@E3',
+            '!*VERB_PROVIDE_WITH:xcomp|ccomp,with,:obj@DT']
+    transform: ['SHARE', 'E2', 'DT', 'E3|E1']
+
+  # E1 require/ask E2 to provide DT to E3
+  - root: '*VERB_REQUIRE_TODO:root|ccomp'
+    match: [':subj@E1',
+            '*VERB_PROVIDE_TO:xcomp|ccomp,:subj@E2',
+            '!*VERB_PROVIDE_TO:xcomp|ccomp,:obj@DT',
+            '*VERB_PROVIDE_TO:xcomp|ccomp,to,:obj@E3',
+            '*VERB_PROVIDE_TO:xcomp|ccomp,:dative@E4']
+    transform: ['SHARE', 'E2', 'DT', 'E3|E4|E1']
+
+  # ... allow E1 to collect DT from E2
+  - root: '*VERB_ALLOW_TODO:root|ccomp'
+    match: ['*VERB_COLLECT_FROM:xcomp,:subj@E1',
+            '!*VERB_COLLECT_FROM:xcomp,:obj@DT',
+            '*VERB_COLLECT_FROM:xcomp,from,:obj@E2']
+    transform: ['COLLECT', 'E1', 'DT', 'E2']
+
+  # ... allow E1 to share DT with E2
+  - root: '*VERB_ALLOW_TODO:root|ccomp'
+    match: ['*VERB_SHARE_WITH:xcomp,:subj@E1',
+            '!*VERB_SHARE_WITH:xcomp,:obj@DT',
+            '*VERB_SHARE_WITH:xcomp,with,:obj@E2']
+    transform: ['SHARE', 'E1', 'DT', 'E2']
+
+  # ... allow E1 to use DT
+  - root: '*VERB_ALLOW_TODO:root|ccomp'
+    match: ['*VERB_USE:xcomp,:subj@E1',
+            '!*VERB_USE:xcomp,:obj@DT']
+    transform: ['USE', 'E1', 'DT']
+
+  # ... allow E1 to store DT
+  - root: '*VERB_ALLOW_TODO:root|ccomp'
+    match: ['*VERB_STORE:xcomp,:subj@E1',
+            '!*VERB_STORE:xcomp,:obj@DT']
+    transform: ['STORE', 'E1', 'DT']
+
+  # E1 have/need to collect DT from E2
+  - root: '*VERB_HAVE_TODO:root|ccomp'
+    match: [':subj@E1',
+            '!*VERB_COLLECT_FROM:xcomp,:obj@DT',
+            '*VERB_COLLECT_FROM:xcomp,from,:obj@E2']
+    transform: ['COLLECT', 'E1', 'DT', 'E2']
+
+  # E1 have/need to use DT
+  - root: '*VERB_HAVE_TODO:root|ccomp'
+    match: [':subj@E1',
+            '!*VERB_USE:xcomp,:obj@DT']
+    transform: ['USE', 'E1', 'DT']
+
+  # E1 have/need to store DT
+  - root: '*VERB_HAVE_TODO:root|ccomp'
+    match: [':subj@E1',
+            '!*VERB_STORE:xcomp,:obj@DT']
+    transform: ['STORE', 'E1', 'DT']
+
+  # DT E1 collect/use/store include ...
+  - root: 'include:root|ccomp'
+    match: [':subj@DT,*VERB_COLLECT_FROM:relcl,:subj@E1']
+    transform: ['COLLECT', 'E1', 'DT', 'X']
+
+  - root: 'include:root|ccomp'
+    match: [':subj@DT,*VERB_USE:relcl,:subj@E1']
+    transform: ['USE', 'E1', 'DT']
+
+  - root: 'include:root|ccomp'
+    match: [':subj@DT,*VERB_STORE:relcl,:subj@E1']
+    transform: ['STORE', 'E1', 'DT']
+
+  # E1 use ... to collect DT
+  - root: '*VERB_USE:root|ccomp'
+    match: [':subj@E1',
+            '!*VERB_COLLECT_FROM:xcomp,:obj@DT']
+    transform: ['COLLECT', 'E1', 'DT', 'X']
